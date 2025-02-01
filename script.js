@@ -22,6 +22,7 @@ const debounce = (func, delay) => {
  * - Otherwise, round to the nearest whole number (e.g. RM11).
  */
 function formatPrice(price) {
+  // Convert the price to a number. If it fails, return "RM0.00".
   const num = parseFloat(price);
   if (isNaN(num)) return 'RM0.00';
   if (num < 11) {
@@ -33,6 +34,9 @@ function formatPrice(price) {
 
 /**
  * Loads the products from the Excel file using the XLSX library.
+ * We map the columns by index:
+ *  0: SCF, 1: BRAND, 2: NAME, 3: RCP, 4: BLK, 5: RM (ignored),
+ *  6: S-COIN, 7: Remark, 8: URL
  */
 async function loadProducts() {
   toggleLoading(true);
@@ -43,20 +47,22 @@ async function loadProducts() {
     const workbook = XLSX.read(data, { type: 'array', cellFormula: false });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // Get raw data including formulas
+    // Get the raw data (an array of rows) with header row included.
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    const headers = rawData[0]; // Expected: SCF, BRAND, NAME, RCP, BLK, RM, S-COIN, Remark, URL
 
-    // Process data using the row index
-    allProducts = rawData.slice(1).map((row, rowIndex) => {
-      const product = {};
-      headers.forEach((header, colIndex) => {
-        const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
-        const cell = sheet[cellAddress];
-        // Use cell.w (formatted) if available; otherwise, fallback to cell.v (raw value)
-        product[header] = cell ? (cell.w !== undefined ? cell.w : cell.v) : row[colIndex];
-      });
-      return product;
+    // Map each row (skipping the header row) by fixed index.
+    allProducts = rawData.slice(1).map(row => {
+      return {
+        SCF: row[0],
+        BRAND: row[1],
+        NAME: row[2],
+        RCP: row[3],
+        BLK: row[4],
+        // Skip column 5 (RM)
+        "S-COIN": row[6],
+        Remark: row[7],
+        URL: row[8]
+      };
     });
 
     populateBrandFilter();
@@ -123,7 +129,7 @@ function renderPage(page) {
     const productBox = document.createElement('div');
     productBox.className = 'product-box';
 
-    // Safe retrieval of product data
+    // Safe retrieval of product data; if a value is missing, display "N/A".
     const safeGet = (prop) => product[prop] || 'N/A';
 
     productBox.innerHTML = `
