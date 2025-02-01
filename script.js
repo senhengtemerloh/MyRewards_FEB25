@@ -6,7 +6,7 @@ let allProducts = [];
 let filteredProducts = [];
 
 /**
- * Debounce function: delays processing until the user stops typing
+ * Debounce function: delays processing until the user stops typing.
  */
 const debounce = (func, delay) => {
   let timeoutId;
@@ -17,11 +17,18 @@ const debounce = (func, delay) => {
 };
 
 /**
- * Format price function (customize as needed)
+ * Format price in RM.
+ * - If price is below RM11, display two decimals (e.g. RM10.00).
+ * - Otherwise, round to the nearest whole number (e.g. RM11).
  */
 function formatPrice(price) {
-  if (!price || isNaN(price)) return '$0.00';
-  return `$${parseFloat(price).toFixed(2)}`;
+  const num = parseFloat(price);
+  if (isNaN(num)) return 'RM0.00';
+  if (num < 11) {
+    return `RM${num.toFixed(2)}`;
+  } else {
+    return `RM${Math.round(num)}`;
+  }
 }
 
 /**
@@ -143,12 +150,7 @@ function renderPage(page) {
         </div>
 
         <div class="promo-price">
-          <span class="coin-points">${
-            (() => {
-              const sCoin = parseInt(product['S-COIN'], 10);
-              return isNaN(sCoin) ? '0' : sCoin.toLocaleString();
-            })()
-          }</span>
+          <span class="coin-points">${safeGet('S-COIN')}</span>
           S-Coin Points
         </div>
         ${
