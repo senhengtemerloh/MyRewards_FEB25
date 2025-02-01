@@ -18,12 +18,15 @@ const debounce = (func, delay) => {
 
 /**
  * Format price in RM.
+ * - Cleans the input value by removing any non-digit (except decimal point) characters.
  * - If price is below RM11, display two decimals (e.g. RM10.00).
  * - Otherwise, round to the nearest whole number (e.g. RM11).
  */
 function formatPrice(price) {
-  // Convert the price to a number. If it fails, return "RM0.00".
-  const num = parseFloat(price);
+  // Convert the price to a string and remove any non-digit (except ".") characters.
+  const priceStr = price ? price.toString() : "";
+  const cleaned = priceStr.replace(/[^0-9.]/g, "");
+  const num = parseFloat(cleaned);
   if (isNaN(num)) return 'RM0.00';
   if (num < 11) {
     return `RM${num.toFixed(2)}`;
@@ -35,8 +38,8 @@ function formatPrice(price) {
 /**
  * Loads the products from the Excel file using the XLSX library.
  * We map the columns by index:
- *  0: SCF, 1: BRAND, 2: NAME, 3: RCP, 4: BLK, 5: RM (ignored),
- *  6: S-COIN, 7: Remark, 8: URL
+ *   0: SCF, 1: BRAND, 2: NAME, 3: RCP, 4: BLK, 5: RM (ignored),
+ *   6: S-COIN, 7: Remark, 8: URL
  */
 async function loadProducts() {
   toggleLoading(true);
@@ -49,6 +52,8 @@ async function loadProducts() {
 
     // Get the raw data (an array of rows) with header row included.
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    // For debugging, you can log the rawData:
+    // console.log("Raw data:", rawData);
 
     // Map each row (skipping the header row) by fixed index.
     allProducts = rawData.slice(1).map(row => {
@@ -58,12 +63,15 @@ async function loadProducts() {
         NAME: row[2],
         RCP: row[3],
         BLK: row[4],
-        // Skip column 5 (RM)
+        // Ignore the RM column at index 5.
         "S-COIN": row[6],
         Remark: row[7],
         URL: row[8]
       };
     });
+
+    // For debugging, log the products array:
+    // console.log("All products:", allProducts);
 
     populateBrandFilter();
     filterProducts();
