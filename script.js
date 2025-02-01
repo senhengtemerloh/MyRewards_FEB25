@@ -36,6 +36,17 @@ function formatPrice(price) {
 }
 
 /**
+ * Format S-Coin value.
+ * Converts the S-Coin value into an integer and formats it with comma separators.
+ * For example, 10000 becomes "10,000".
+ */
+function formatScoin(scoin) {
+  const num = parseInt(scoin, 10);
+  if (isNaN(num)) return scoin;
+  return num.toLocaleString();
+}
+
+/**
  * Loads the products from the Excel file using the XLSX library.
  * We map the columns by index:
  *   0: SCF, 1: BRAND, 2: NAME, 3: RCP, 4: BLK, 5: RM (ignored),
@@ -52,7 +63,7 @@ async function loadProducts() {
 
     // Get the raw data (an array of rows) with header row included.
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    // For debugging, you can log the rawData:
+    // Uncomment to debug:
     // console.log("Raw data:", rawData);
 
     // Map each row (skipping the header row) by fixed index.
@@ -70,7 +81,7 @@ async function loadProducts() {
       };
     });
 
-    // For debugging, log the products array:
+    // Uncomment to debug:
     // console.log("All products:", allProducts);
 
     populateBrandFilter();
@@ -165,7 +176,7 @@ function renderPage(page) {
         </div>
 
         <div class="promo-price">
-          <span class="coin-points">${safeGet('S-COIN')}</span>
+          <span class="coin-points">${formatScoin(product["S-COIN"])}</span>
           S-Coin Points
         </div>
         ${
