@@ -45,7 +45,7 @@ async function loadProducts() {
 
     // Get raw data including formulas
     const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    const headers = rawData[0];
+    const headers = rawData[0]; // Expected: SCF, BRAND, NAME, RCP, BLK, RM, S-COIN, Remark, URL
 
     // Process data using the row index
     allProducts = rawData.slice(1).map((row, rowIndex) => {
@@ -53,7 +53,8 @@ async function loadProducts() {
       headers.forEach((header, colIndex) => {
         const cellAddress = XLSX.utils.encode_cell({ r: rowIndex + 1, c: colIndex });
         const cell = sheet[cellAddress];
-        product[header] = cell?.w || row[colIndex];
+        // Use cell.w (formatted) if available; otherwise, fallback to cell.v (raw value)
+        product[header] = cell ? (cell.w !== undefined ? cell.w : cell.v) : row[colIndex];
       });
       return product;
     });
