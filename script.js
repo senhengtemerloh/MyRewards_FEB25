@@ -41,9 +41,9 @@ function formatPrice(price) {
  * For example, 10000 becomes "10,000".
  */
 function formatScoin(scoin) {
-  const num = parseInt(scoin, 10);
+  const num = Number(scoin); // or parseInt(scoin, 10)
   if (isNaN(num)) return scoin;
-  return num.toLocaleString();
+  return num.toLocaleString('en-US');
 }
 
 /**
